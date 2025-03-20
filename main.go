@@ -57,5 +57,24 @@ func main() {
 		c.JSON(http.StatusCreated, gin.H{"data": newUsers})
 	})
 
+	router.PUT("/users/:id", func(c *gin.Context) {
+		var user User
+		id := c.Param("id")
+
+		if err := db.First(&user, id).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User tidak ditemukan"})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		db.Save(&user)
+
+		c.JSON(http.StatusOK, gin.H{"message": "User berhasil diperbarui", "data": user})
+	})
+
 	router.Run(":3000")
 }
